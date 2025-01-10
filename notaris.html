@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Notaris</title>
+    <!-- Link Bootstrap CSS -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome for Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script src="assets/js/scripts.js"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <style>
+      /* Hover effect for table rows */
+      .table-hover tbody tr:hover {
+        background-color: blue;
+      }
+
+      /* Animated button effects */
+      .btn:hover {
+        transition: transform 0.2s ease-in-out;
+        transform: scale(1.1);
+      }
+
+      /* Shadow effect on cards */
+      .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease-in-out;
+      }
+
+      .card:hover {
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .card {
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #f1faff;
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+      }
+
+      .card-text {
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .btn {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="header"></div>
+    <div class="container mt-5">
+      <h1>Daftar Notaris</h1>
+
+      <h2 class="text-center mb-4"></h2>
+      <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-primary" id="addNotarisButton">
+          <i class="fas fa-plus"></i> Tambah Notaris
+        </button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="row mb-4">
+        <div class="col-12 col-md-6 mx-auto">
+          <input
+            type="text"
+            id="searchInput"
+            class="form-control mb-3"
+            placeholder="Search Notaris..."
+            oninput="searchNotaris()"
+          />
+
+          <!-- Date Range Search -->
+          <div class="d-flex">
+            <input
+              type="date"
+              id="tglMulai"
+              class="form-control mr-2"
+              placeholder="Tanggal Mulai"
+              onchange="searchNotaris()"
+            />
+            <input
+              type="date"
+              id="tglSelesai"
+              class="form-control"
+              placeholder="Tanggal Selesai"
+              onchange="searchNotaris()"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Row of Cards to display Notaris data -->
+      <div class="row" id="notarisCards">
+        <!-- Data will be loaded here by JS -->
+      </div>
+
+      <!-- Pagination -->
+      <nav aria-label="Page navigation example ">
+        <ul class="pagination justify-content-end">
+          <li class="page-item">
+            <a class="page-link" href="#" onclick="loadNotaris(1)">Previous</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="#" onclick="loadNotaris(2)">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Modal for update -->
+    <div
+      class="modal fade"
+      id="updateModal"
+      tabindex="-1"
+      aria-labelledby="updateModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="updateModalLabel">Update Notaris</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Form for updating notaris -->
+            <form id="updateNotarisForm">
+              <div class="form-group">
+                <label for="updatePihakMemberi">Pihak Memberi</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="updatePihakMemberi"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="updatePihakMenerima">Pihak Menerima</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="updatePihakMenerima"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="updateKeterangan">Keterangan</label>
+                <textarea
+                  class="form-control"
+                  id="updateKeterangan"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Update</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal fade"
+      id="addNotarisModal"
+      tabindex="-1"
+      aria-labelledby="addNotarisModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addNotarisModalLabel">
+              Tambah Notaris
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="addNotarisForm">
+              <div class="form-group">
+                <label for="akta_id">ID Akta</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="akta_id"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="pihak_memberi">Pihak Memberi</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="pihak_memberi"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="pihak_menerima">Pihak Menerima</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="pihak_menerima"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="nomor_hak">Nomor Hak</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nomor_hak"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="transaksi1">Transaksi</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="transaksi1"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="nop1">NOP</label>
+                <input type="number" class="form-control" id="nop1" required />
+              </div>
+              <div class="form-group">
+                <label for="keterangan1">Keterangan</label>
+                <textarea
+                  class="form-control"
+                  id="keterangan1"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Tambah</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="deleteModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="deleteModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Delete Notaris</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Apakah Kamu Yakin Mau Menghapus Data ini ?
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" id="confirmDelete" class="btn btn-danger">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Link Bootstrap and jQuery JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+      // Function to load Notaris data
+      function loadNotaris(page) {
+        const searchTerm = document.getElementById("searchInput").value;
+        const tglMulai = document.getElementById("tglMulai").value;
+        const tglSelesai = document.getElementById("tglSelesai").value;
+
+        const url = `http://localhost:8080/notaris/?page=${page}&per_page=10&tgl_mulai=${tglMulai}&tgl_selesai=${tglSelesai}&search=${searchTerm}`;
+
+        // Fetch Akta data once, to map AktaId to Akta names
+        fetch("http://127.0.0.1:8080/akta/")
+          .then((response) => response.json())
+          .then((aktaData) => {
+            const aktaMap = new Map();
+            aktaData.data.forEach((akta) => {
+              aktaMap.set(akta.AktaID, akta.Akta);
+            });
+
+            // Now fetch notaris data
+            fetch(url)
+              .then((response) => response.json())
+              .then((data) => {
+                const notarisCards = document.getElementById("notarisCards");
+                notarisCards.innerHTML = ""; // Clear previous data
+
+                // Ensure you have the correct data format before appending
+                if (data && data.data && data.data.length > 0) {
+                  data.data.forEach((notaris) => {
+                    const card = document.createElement("div");
+                    card.classList.add("col-12", "col-md-6", "mb-4");
+
+                    // Map the AktaId to the corresponding Akta name
+                    const aktaId = aktaMap.get(notaris.AktaId) || "N/A"; // Make sure this field is available in the response
+
+                    // Handle missing or empty dates
+                    const createdAt = notaris.CreatedAt
+                      ? new Date(notaris.CreatedAt).toISOString().split("T")[0]
+                      : "N/A";
+                    const updatedAt = notaris.UpdatedAt
+                      ? new Date(notaris.UpdatedAt).toISOString().split("T")[0]
+                      : "N/A";
+                    const deletedAt = notaris.DeletedAt
+                      ? new Date(notaris.DeletedAt).toISOString().split("T")[0]
+                      : "N/A";
+
+                    card.innerHTML = `
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3"><strong>Nomor Notaris:</strong> ${notaris.NotarisId}</h5>
+                        <table class="table table-bordered mb-3">
+                            <tbody>
+                                <tr>
+                                    <th>Akta</th>
+                                    <td>${aktaId}</td>
+                                </tr>
+                                <tr>
+                                    <th>Pihak Memberi</th>
+                                    <td>${notaris.PihakMemberi}</td>
+                                </tr>
+                                <tr>
+                                    <th>Pihak Menerima</th>
+                                    <td>${notaris.PihakMenerima}</td>
+                                </tr>
+                                <tr>
+                                    <th>Nomor Hak</th>
+                                    <td>${notaris.NomorHak}</td>
+                                </tr>
+                                <tr>
+                                    <th>Transaksi</th>
+                                    <td>${notaris.Transaksi}</td>
+                                </tr>
+                                <tr>
+                                    <th>NOP</th>
+                                    <td>${notaris.Nop}</td>
+                                </tr>
+                                <tr>
+                                    <th>Keterangan</th>
+                                    <td>${notaris.Keterangan}</td>
+                                </tr>
+                                <tr>
+                                    <th>Tanggal Pembuatan</th>
+                                    <td>${createdAt}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="d-flex justify-content-end">
+                            <button class="btn btn-warning btn-sm me-2" onclick="showUpdateModal(${notaris.NotarisId})">
+                                <i class="fas fa-edit"></i> Update
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="showDeleteModal(${notaris.NotarisId})">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+              `;
+                    notarisCards.appendChild(card);
+                  });
+                } else {
+                  notarisCards.innerHTML =
+                    "<p>Tidak ada data yang anda cari</p>";
+                }
+              })
+              .catch((error) => {
+                console.error("Error loading data:", error);
+              });
+          })
+          .catch((error) => {
+            console.error("Error fetching akta data:", error);
+          });
+      }
+
+      // Function to trigger the search whenever the input or date range changes
+      function searchNotaris() {
+        loadNotaris(1); // Reload the data with the current search and date range
+      }
+
+      // Function to show Update modal
+      function showUpdateModal(notarisId) {
+        const url = `http://localhost:8080/notaris/detail?notaris_id=${notarisId}`;
+        fetch(url)
+          .then((response) => response.json())
+          .then((data) => {
+            const notaris = data.data;
+            document.getElementById("updatePihakMemberi").value =
+              notaris.PihakMemberi;
+            document.getElementById("updatePihakMenerima").value =
+              notaris.PihakMenerima;
+            document.getElementById("updateKeterangan").value =
+              notaris.Keterangan;
+
+            $("#updateModal").modal("show");
+            document.getElementById("updateNotarisForm").onsubmit = (e) => {
+              e.preventDefault();
+              const updatedData = {
+                notaris_id: notarisId,
+
+                pihak_memberi:
+                  document.getElementById("updatePihakMemberi").value,
+                pihak_menerima: document.getElementById("updatePihakMenerima")
+                  .value,
+                keterangan: document.getElementById("updateKeterangan").value,
+              };
+              fetch(
+                `http://localhost:8080/notaris/update?notaris_id=${notarisId}`,
+                {
+                  method: "POST",
+                  body: JSON.stringify(updatedData),
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              )
+                .then((response) => response.json())
+                .then((data) => {
+                  alert("Notaris updated successfully");
+                  $("#updateModal").modal("hide");
+                  loadNotaris(1); // Reload data after update
+                })
+                .catch((error) => console.log(error));
+            };
+          })
+          .catch((error) => console.log(error));
+      }
+
+      // Function to show Delete modal
+      function showDeleteModal(notarisId) {
+        $("#deleteModal").modal("show");
+        document.getElementById("confirmDelete").onclick = () => {
+          fetch(
+            `http://localhost:8080/notaris/delete?notaris_id=${notarisId}`,
+            { method: "POST" }
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              alert("Notaris deleted successfully");
+              $("#deleteModal").modal("hide");
+              loadNotaris(1);
+            })
+            .catch((error) => console.log(error));
+        };
+      }
+
+      document
+        .getElementById("addNotarisButton")
+        .addEventListener("click", () => {
+          $("#addNotarisModal").modal("show");
+        });
+      document
+        .getElementById("addNotarisForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const newNotaris = {
+            akta_id: parseInt(document.getElementById("akta_id").value),
+            pihak_memberi: document.getElementById("pihak_memberi").value,
+            pihak_menerima: document.getElementById("pihak_menerima").value,
+            nomor_hak: document.getElementById("nomor_hak").value,
+            transaksi: parseInt(document.getElementById("transaksi1").value),
+            nop: parseInt(document.getElementById("nop1").value),
+            keterangan: document.getElementById("keterangan1").value,
+          };
+
+          fetch("http://localhost:8080/notaris/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(newNotaris),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              alert("Notaris added successfully!");
+              $("#addNotarisModal").modal("hide"); // Close the modal after submission
+              loadNotaris(1); // Reload the notaris list
+            })
+            .catch((error) => console.error("Error adding Notaris:", error));
+        });
+
+      function fetchAkta() {
+        return fetch("http://127.0.0.1:8080/akta/")
+          .then((response) => response.json())
+          .then((data) => {
+            // Store Akta data in a map by AktaID for quick lookup
+            const aktaMap = new Map();
+            data.data.forEach((akta) => {
+              aktaMap.set(akta.AktaID, akta.Akta); // Map AktaID to Akta name
+            });
+            return aktaMap;
+          });
+      }
+
+      // Initial load of Notaris data
+      loadNotaris(1);
+    </script>
+  </body>
+</html>
