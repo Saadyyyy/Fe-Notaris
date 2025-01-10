@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Data - Notaris</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="assets/js/scripts.js"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <style>
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #fff;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            table th, table td {
+                border: 1px solid #000;
+                padding: 8px;
+                text-align: left;
+            }
+
+            .container {
+                padding: 0;
+                background-color: transparent;
+                border-radius: 0;
+            }
+
+            .search-form, .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="header"></div>
+    <div class="container">
+        <h1 class="mb-5 text-start mt-3">Print Data</h1>
+
+        <!-- Form to filter by Tanggal Mulai and Tanggal Selesai -->
+        <div class="search-form mb-4">
+            <form id="searchForm">
+                <div class="form-row">
+                    <div class="col">
+                        <label for="tglMulai">Tanggal Mulai</label>
+                        <input type="date" id="tglMulai" class="form-control">
+                    </div>
+                    <div class="col">
+                        <label for="tglSelesai">Tanggal Selesai</label>
+                        <input type="date" id="tglSelesai" class="form-control">
+                    </div>
+                    <div class="col">
+                        <label for="search">Search</label>
+                        <input type="text" id="search" class="form-control" placeholder="Search...">
+                    </div>
+                    <div class="col align-self-end">
+                        <button type="submit" class="btn btn-primary">Cari</button>
+                    </div>
+                    <div class="col align-self-end">
+                        <button class="btn btn-success" onclick="window.print()">Print</button>
+                    </div>
+                </div>
+            </form>
+              <!-- Print Button (Hidden in Print Mode) -->
+        
+        </div>
+
+        <!-- Table for displaying notaris data -->
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nomor Notaris</th>
+                    <th>Akta</th>
+                    <th>Pihak Memberi</th>
+                    <th>Pihak Menerima</th>
+                    <th>Nomor Hak</th>
+                    <th>Transaksi</th>
+                    <th>NOP</th>
+                    <th>Keterangan</th>
+                    <th>Tanggal Pembuatan</th>
+                </tr>
+            </thead>
+            <tbody id="notarisTableBody">
+                <!-- Data rows will be inserted dynamically here -->
+            </tbody>
+        </table>
+
+      
+    </div>
+
+    <script>
+        let allData = [];
+        let totalPages = 100; // Set this value dynamically based on your API response, if possible
+
+        function fetchData(page) {
+            
+            const tglMulai = document.getElementById("tglMulai").value;
+            const tglSelesai = document.getElementById("tglSelesai").value;
+            const searchTerm = document.getElementById("search").value;
+
+            console.log(`Fetching page ${page} with params: tgl_mulai=${tglMulai}, tgl_selesai=${tglSelesai}, search=${searchTerm}`);
+
+            fetch(`http://127.0.0.1:8080/notaris/?page=${page}&per_page=10&tgl_mulai=${tglMulai}&tgl_selesai=${tglSelesai}&search=${searchTerm}`)
+            
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Data fetched for page', page, data); // Debugging
+                    allData = allData.concat(data.data); // Concatenate the data for all pages
+                    if (page < totalPages) {
+                        fetchData(page + 1); // Fetch next page
+                    } else {
+                        console.log('All data fetched:', allData); // Debugging
+                        renderTable(allData); // Render all data when all pages are fetched
+                    }
+                })
+                .catch(error => console.log("Error fetching data:", error));
+        }
+
+        // Render data to table
+        // Render data to table
+function renderTable(data) {
+    // Fetch Akta data once, to map AktaId to Akta names
+    fetch('http://127.0.0.1:8080/akta/')
+        .then((response) => response.json())
+        .then((aktaData) => {
+            const aktaMap = new Map();
+            aktaData.data.forEach((akta) => {
+                aktaMap.set(akta.AktaID, akta.Akta);
+            });
+
+            const tableBody = document.getElementById("notarisTableBody");
+            tableBody.innerHTML = ""; // Clear previous data
+
+            if (data.length > 0) {
+                data.forEach((notaris, index) => {
+                    const aktaName = aktaMap.get(notaris.AktaId) || "Tidak Ditemukan"; // Get Akta name from AktaId
+
+                    const rowHTML = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${notaris.NotarisId}</td>
+                            <td>${aktaName}</td> <!-- Replace AktaId with Akta name -->
+                            <td>${notaris.PihakMemberi}</td>
+                            <td>${notaris.PihakMenerima}</td>
+                            <td>${notaris.NomorHak}</td>
+                            <td>${notaris.Transaksi}</td>
+                            <td>${notaris.Nop}</td>
+                            <td>${notaris.Keterangan}</td>
+                            <td>${new Date(notaris.CreatedAt).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += rowHTML;
+                });
+            } else {
+                tableBody.innerHTML = "<tr><td colspan='10' class='text-center'>Tidak ada data yang anda cari</td></tr>";
+            }
+        })
+        .catch((error) => {
+            console.error("Error fetching Akta data:", error);
+        });
+}
+
+
+        // Load all data when print button is clicked
+        function loadAllData() {
+            allData = []; // Clear any existing data
+            fetchData(1); // Start fetching data from page 1
+        }
+
+        // Event listener for the search form submit
+        document.getElementById("searchForm").addEventListener("submit", (event) => {
+            event.preventDefault(); // Prevent default form submission
+            loadAllData(); // Load all data when searching
+        });
+        
+
+        // Initial data load when page is loaded
+        loadAllData();
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
