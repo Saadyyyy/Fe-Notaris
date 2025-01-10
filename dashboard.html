@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="assets/js/scripts.js"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+    <!-- Dashboard content here -->
+    <div id="header"></div>
+    <!-- Chart container -->
+    
+    <div class="container mt-5">
+        <h1>Dashboard</h1>
+        <canvas id="notarisChart"></canvas>
+    </div>
+
+    <script>
+        // Fetch the data with the necessary query parameters
+        let allData = [];
+let page = 1;
+let totalPages = 100; // You should dynamically get the total number of pages if your API provides that info
+
+function fetchData(page) {
+    fetch(`http://127.0.0.1:8080/notaris/?page=${page}&per_page=10&tgl_mulai=2024-01-1&tgl_selesai=2026-01-6&search=`)
+        .then(response => response.json())
+        .then(data => {
+            allData = allData.concat(data.data); // Concatenate the data for all pages
+            if (page < totalPages) {
+                fetchData(page + 1); // Fetch next page
+            } else {
+                const groupedData = groupByDate(allData);
+                const labels = Object.keys(groupedData);
+                const counts = Object.values(groupedData);
+                renderChart(labels, counts);
+            }
+        })
+        .catch(error => console.log("Error fetching data:", error));
+}
+
+fetchData(page); // Start fetching from page 1
+
+        // Group notaris by their creation date
+        function groupByDate(data) {
+            return data.reduce((acc, notaris) => {
+                // Parse the CreatedAt date to handle it correctly
+                const date = new Date(notaris.CreatedAt).toLocaleDateString(); // Use toLocaleDateString() to format the date
+                acc[date] = (acc[date] || 0) + 1;
+                return acc;
+            }, {});
+        }
+
+        // Render the chart with labels and data
+        function renderChart(labels, counts) {
+            const ctx = document.getElementById('notarisChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar', // Choose your chart type (line, bar, etc.)
+                data: {
+                    labels: labels, // Date labels on X-axis
+                    datasets: [{
+                        label: 'Grafik Data Masuk',
+                        data: counts, // Data for Y-axis (counts of notaris)
+                        borderColor: 'rgba(64, 190, 255, 1)',
+                        backgroundColor: 'rgba(64, 190, 255, 1)',
+                        fill: true,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'category', // Ensure correct handling of categorical data on X-axis
+                            title: {
+                                display: true,
+                                text: 'Tanggal'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Data Notaris'
+                            }
+                        }
+                    },
+                }
+            });
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
