@@ -112,7 +112,7 @@
 
             console.log(`Fetching page ${page} with params: tgl_mulai=${tglMulai}, tgl_selesai=${tglSelesai}, search=${searchTerm}`);
 
-            fetch(`http://127.0.0.1:8080/notaris/?page=${page}&per_page=10&tgl_mulai=${tglMulai}&tgl_selesai=${tglSelesai}&search=${searchTerm}`)
+            fetch(`https://3r1djzn5-8080.asse.devtunnels.ms/notaris/?page=${page}&per_page=10&tgl_mulai=${tglMulai}&tgl_selesai=${tglSelesai}&search=${searchTerm}`)
             
                 .then(response => response.json())
                 .then(data => {
@@ -132,7 +132,7 @@
         // Render data to table
 function renderTable(data) {
     // Fetch Akta data once, to map AktaId to Akta names
-    fetch('http://127.0.0.1:8080/akta/')
+    fetch('https://3r1djzn5-8080.asse.devtunnels.ms/akta/')
         .then((response) => response.json())
         .then((aktaData) => {
             const aktaMap = new Map();
