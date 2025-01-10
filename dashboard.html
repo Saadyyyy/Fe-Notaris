@@ -25,7 +25,7 @@
         // Fetch the data with the necessary query parameters
         let allData = [];
 let page = 1;
-let totalPages = 100; // You should dynamically get the total number of pages if your API provides that info
+let totalPages = 10; // You should dynamically get the total number of pages if your API provides that info
 
 function fetchData(page) {
     fetch(`https://3r1djzn5-8080.asse.devtunnels.ms/notaris/?page=${page}&per_page=10&tgl_mulai=2024-01-1&tgl_selesai=2026-01-6&search=`)
