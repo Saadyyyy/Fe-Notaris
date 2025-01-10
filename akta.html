@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Akta List</title>
+    <!-- Link Bootstrap CSS -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome for Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script src="assets/js/scripts.js"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <style>
+      .container {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+      }
+
+      .table {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .table th,
+      .table td {
+        padding: 12px 15px;
+        text-align: center;
+      }
+
+      .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #f1f1f1;
+      }
+
+      .btn {
+        border-radius: 5px;
+        font-size: 14px;
+      }
+
+      .btn-warning {
+        background-color: #f39c12;
+        border-color: #e67e22;
+      }
+
+      .btn-warning:hover {
+        background-color: #e67e22;
+        border-color: #f39c12;
+        transform: scale(1.05);
+        transition: 0.3s ease-in-out;
+      }
+
+      .btn-primary {
+        background-color: #007bff;
+        border-color: #0069d9;
+      }
+
+      .btn-primary:hover {
+        background-color: #0069d9;
+        border-color: #0056b3;
+        transform: scale(1.05);
+        transition: 0.3s ease-in-out;
+      }
+
+      .btn-danger {
+        background-color: #e74c3c;
+        border-color: #c0392b;
+      }
+
+      .btn-danger:hover {
+        background-color: #c0392b;
+        border-color: #e74c3c;
+        transform: scale(1.05);
+        transition: 0.3s ease-in-out;
+      }
+
+      .modal-header {
+        background-color: #007bff;
+        color: #ffffff;
+        border-radius: 8px 8px 0 0;
+      }
+
+      .modal-body {
+        background-color: #f8f9fa;
+        padding: 25px;
+      }
+
+      .modal-footer {
+        border-top: none;
+        padding-top: 0;
+      }
+
+      .modal-content {
+        border-radius: 10px;
+      }
+
+      .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+      }
+
+      .d-flex.justify-content-end button {
+        font-size: 16px;
+        padding: 10px 20px;
+      }
+
+      /* Hover Effect for the Table Rows */
+      .table tbody tr:hover {
+        background-color: #f4f4f9;
+        cursor: pointer;
+      }
+
+      @media print {
+        body {
+          font-family: "Helvetica", "Arial", sans-serif; /* Ganti dengan font yang diinginkan */
+          font-size: 12px; /* Atur ukuran font untuk mencetak */
+          color: #000; /* Pastikan warna teks tetap terlihat */
+          background: none; /* Hapus background jika tidak diperlukan */
+        }
+        .container {
+          box-shadow: none; /* Hapus bayangan jika ada */
+        }
+        .btn {
+          display: none; /* Sembunyikan tombol saat mencetak */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header id="header"></header>
+    <div class="container mt-5">
+      <h1 class="mb-4 text-center">Jenis Akta</h1>
+      <h2 class="text-center mb-4"></h2>
+      <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-primary" id="addAktaButton">
+          <i class="fas fa-plus"></i> Tambah Notaris
+        </button>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Nomor Akta</th>
+            <th>Akta</th>
+            <th>Tanggal Dibuat</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="aktaTableBody">
+          <!-- Rows of Akta data will be dynamically inserted here -->
+        </tbody>
+      </table>
+    </div>
+    <!-- Modal for showing details or updating Akta -->
+    <div
+      class="modal fade"
+      id="updateModal"
+      tabindex="-1"
+      aria-labelledby="updateModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="updateModalLabel">Update Akta</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="updateAktaForm">
+              <div class="mb-3">
+                <label for="updateAkta" class="form-label">Akta</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="updateAkta"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">Update</button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                id="deleteButton"
+                onclick="deleteAktaModal()"
+              >
+                Delete
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="deleteModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="deleteModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Delete Akta</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Apakah Kamu Yakin Mau Menghapus Data ini ?
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" id="confirmDelete" class="btn btn-danger">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- fungsi tambah soal -->
+    <div
+    class="modal fade"
+    id="addNotarisModal"
+    tabindex="-1"
+    aria-labelledby="addNotarisModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addNotarisModalLabel">
+            Tambah Notaris
+          </h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="addNotarisForm">
+            <div class="form-group">
+              <label for="akta">Tambah Jenis Akta</label>
+              <input
+                type="text"
+                class="form-control"
+                id="akta"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Tambah</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <script>
+      // Function to fetch and display Akta data
+      function loadAkta() {
+        fetch("http://127.0.0.1:8080/akta/")
+          .then((response) => response.json())
+          .then((data) => {
+            const aktaTableBody = document.getElementById("aktaTableBody");
+            aktaTableBody.innerHTML = "";
+
+            data.data.forEach((akta) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                            <td>${akta.AktaID}</td>
+                            <td>${akta.Akta}</td>
+                            <td>${akta.CreatedAt}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm me-2" onclick="showUpdateModal(${akta.AktaID})">
+                                <i class="fas fa-edit"></i> Update
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteAktaModal(${akta.AktaID})">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                            </td>
+                            
+                        `;
+              aktaTableBody.appendChild(row);
+            });
+          })
+          .catch((error) => console.log(error));
+      }
+
+      function deleteAktaModal(aktaId) {
+        $("#deleteModal").modal("show");
+        document.getElementById("confirmDelete").onclick = () => {
+          fetch(`http://localhost:8080/akta/delete?akta_id=${aktaId}`, {
+            method: "POST",
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              alert("Akta deleted successfully");
+              $("#deleteModal").modal("hide");
+              loadAkta();
+            })
+            .catch((error) => console.log(error));
+        };
+      }
+
+      function showUpdateModal(aktaID) {
+  const url = `http://localhost:8080/akta/detail?akta_id=${aktaID}`;
+  fetch(url)
+    .then((response) => response.json())
+    .then((data) => {
+      const akta = data.data;
+      document.getElementById("updateAkta").value = akta.Akta;
+
+      $("#updateModal").modal("show");
+
+      document.getElementById("updateAktaForm").onsubmit = (e) => {
+        e.preventDefault();
+        const updatedData = {
+          AktaID: aktaID,  // Make sure to send the AktaID in the request body
+          Akta: document.getElementById("updateAkta").value,  // Get the updated Akta value
+        };
+
+        fetch(`http://localhost:8080/akta/update?akta_id=${aktaID}`, {
+          method: "POST",
+          body: JSON.stringify(updatedData),  // Send the updated Akta and AktaID
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "OK") {
+              alert("Akta updated successfully");
+              $("#updateModal").modal("hide");
+              loadAkta();  // Reload the Akta list after the update
+            } else {
+              alert("Failed to update Akta");
+            }
+          })
+          .catch((error) => {
+            console.error("Error updating Akta:", error);  // Log any error
+            alert("Failed to update Akta");
+          });
+      };
+    })
+    .catch((error) => {
+      console.error("Error fetching Akta details:", error);
+      alert("Failed to fetch Akta details");
+    });
+}   
+      // Load Akta data on page load
+      window.onload = loadAkta;
+
+      loadAkta();
+    </script>
+
+    <!-- Link Bootstrap and jQuery JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+        document
+        .getElementById("addAktaButton")
+        .addEventListener("click", () => {
+          $("#addNotarisModal").modal("show");
+        });
+      document
+        .getElementById("addNotarisForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const newAkta = {
+            akta: document.getElementById("akta").value,
+          };
+
+          fetch("http://localhost:8080/akta/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(newAkta),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              alert("Akta added successfully!");
+              $("#addNotarisModal").modal("hide"); // Close the modal after submission
+              loadAkta
+            })
+            .catch((error) => console.error("Error adding Notaris:", error));
+        });
+        loadAkta
+    </script>
+  </body>
+</html>
