@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
         Password: document.getElementById("password").value,
       };
       try {
-        const response = await fetch("https://3r1djzn5-8080.asse.devtunnels.ms/user/login", {
+        const response = await fetch("http://127.0.0.1:8080/user/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function() {
         email: document.getElementById("email").value,
       };
       try {
-        const response = await fetch("https://3r1djzn5-8080.asse.devtunnels.ms/user/register", {
+        const response = await fetch("http://127.0.0.1:8080/user/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
