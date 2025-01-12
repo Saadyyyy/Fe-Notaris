@@ -69,7 +69,7 @@
 
       <h2 class="text-center mb-4"></h2>
       <div class="d-flex justify-content-end mb-3">
-        <button class="btn btn-primary" id="addNotarisButton">
+        <button class="btn btn-primary" id="openAddNotarisModalButton">
           <i class="fas fa-plus"></i> Tambah Notaris
         </button>
       </div>
@@ -148,38 +148,69 @@
             <!-- Form for updating notaris -->
             <form id="updateNotarisForm">
               <div class="form-group">
-                <label for="updatePihakMemberi">Pihak Memberi</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="updatePihakMemberi"
-                  required
-                />
-              </div>
-              <div class="form-group">
-                <label for="updatePihakMenerima">Pihak Menerima</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="updatePihakMenerima"
-                  required
-                />
-              </div>
-              <div class="form-group">
-                <label for="updateKeterangan">Keterangan</label>
-                <textarea
-                  class="form-control"
-                  id="updateKeterangan"
-                  rows="3"
-                  required
-                ></textarea>
-              </div>
+                <label for="aktaDropdown">Pilih Akta</label>
+                <select class="form-control" id="aktaDropdown" required>
+                    <option value="">Pilih Akta</option>
+                </select>
+            </div>
+          <div class="form-group">
+            <label for="updatePihakMemberi">Pihak Memberi</label>
+            <input
+              type="text"
+              class="form-control"
+              id="updatePihakMemberi"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="updatePihakMenerima">Pihak Menerima</label>
+            <input
+              type="text"
+              class="form-control"
+              id="updatePihakMenerima"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="updateHak">Nomor Hak</label>
+            <input
+              type="text"
+              class="form-control"
+              id="updateHak"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="updateTransaksi">Transaksi</label>
+            <input
+              type="number"
+              class="form-control"
+              id="updateTransaksi"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="updateNop">NOP</label>
+            <input type="number" class="form-control" id="updateNop" required />
+          </div>
+          <div class="form-group">
+            <label for="updateKeterangan">Keterangan</label>
+            <textarea
+              class="form-control"
+              id="updateKeterangan"
+              rows="3"
+              required
+            ></textarea>
+          </div>
               <button type="submit" class="btn btn-primary">Update</button>
             </form>
           </div>
         </div>
       </div>
     </div>
+
+
+    <!-- Tambah modal -->
     <div
       class="modal fade"
       id="addNotarisModal"
@@ -204,15 +235,12 @@
           </div>
           <div class="modal-body">
             <form id="addNotarisForm">
-              <div class="form-group">
-                <label for="akta_id">ID Akta</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="akta_id"
-                  required
-                />
-              </div>
+                  <div class="form-group">
+                    <label for="aktaDrop">Pilih Akta</label>
+                    <select class="form-control" id="aktaDrop" required>
+                        <option value="">Pilih Akta</option>
+                    </select>
+                </div>
               <div class="form-group">
                 <label for="pihak_memberi">Pihak Memberi</label>
                 <input
@@ -321,10 +349,10 @@
         const tglMulai = document.getElementById("tglMulai").value;
         const tglSelesai = document.getElementById("tglSelesai").value;
 
-        const url = `https://3r1djzn5-8080.asse.devtunnels.ms/notaris/?page=${page}&per_page=10&tgl_mulai=${tglMulai}&tgl_selesai=${tglSelesai}&search=${searchTerm}`;
+        const url = `http://127.0.0.1:8080/notaris/?page=${page}&per_page=10&tgl_mulai=${tglMulai}&tgl_selesai=${tglSelesai}&search=${searchTerm}`;
 
         // Fetch Akta data once, to map AktaId to Akta names
-        fetch("https://3r1djzn5-8080.asse.devtunnels.ms/akta/")
+        fetch("http://127.0.0.1:8080/akta/")
           .then((response) => response.json())
           .then((aktaData) => {
             const aktaMap = new Map();
@@ -431,60 +459,65 @@
         loadNotaris(1); // Reload the data with the current search and date range
       }
 
-      // Function to show Update modal
       function showUpdateModal(notarisId) {
-        const url = `https://3r1djzn5-8080.asse.devtunnels.ms/notaris/detail?notaris_id=${notarisId}`;
-        fetch(url)
+  const url = `http://127.0.0.1:8080/notaris/detail?notaris_id=${notarisId}`;
+  fetch(url)
+    .then((response) => response.json())
+    .then((data) => {
+      const notaris = data.data;
+      document.getElementById("updatePihakMemberi").value = notaris.PihakMemberi;
+      document.getElementById("updatePihakMenerima").value = notaris.PihakMenerima;
+      document.getElementById("updateKeterangan").value = notaris.Keterangan;
+      document.getElementById("aktaDropdown").value = notaris.aktaId;
+      document.getElementById("updateNop").value = notaris.Nop;
+      document.getElementById("updateHak").value = notaris.NomorHak;
+      document.getElementById("updateTransaksi").value = notaris.Transaksi;
+
+      // Load the Akta dropdown when the modal opens
+      loadAktaData();
+
+      $("#updateModal").modal("show");
+      document.getElementById("updateNotarisForm").onsubmit = (e) => {
+        e.preventDefault();
+        const aktaId = document.getElementById("aktaDropdown").value; // Get selected Akta ID
+        const newNotaris = {
+          akta_id: parseInt(aktaId),
+          pihak_memberi: document.getElementById("updatePihakMemberi").value,
+          pihak_menerima: document.getElementById("updatePihakMenerima").value,
+          nomor_hak: document.getElementById("updateHak").value,
+          transaksi: parseInt(document.getElementById("updateTransaksi").value),
+          nop: parseInt(document.getElementById("updateNop").value),
+          keterangan: document.getElementById("updateKeterangan").value,
+        };
+        fetch(
+          `http://127.0.0.1:8080/notaris/update?notaris_id=${notarisId}`,
+          {
+            method: "POST",
+            body: JSON.stringify(newNotaris),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        )
           .then((response) => response.json())
           .then((data) => {
-            const notaris = data.data;
-            document.getElementById("updatePihakMemberi").value =
-              notaris.PihakMemberi;
-            document.getElementById("updatePihakMenerima").value =
-              notaris.PihakMenerima;
-            document.getElementById("updateKeterangan").value =
-              notaris.Keterangan;
-
-            $("#updateModal").modal("show");
-            document.getElementById("updateNotarisForm").onsubmit = (e) => {
-              e.preventDefault();
-              const updatedData = {
-                notaris_id: notarisId,
-
-                pihak_memberi:
-                  document.getElementById("updatePihakMemberi").value,
-                pihak_menerima: document.getElementById("updatePihakMenerima")
-                  .value,
-                keterangan: document.getElementById("updateKeterangan").value,
-              };
-              fetch(
-                `https://3r1djzn5-8080.asse.devtunnels.ms/notaris/update?notaris_id=${notarisId}`,
-                {
-                  method: "POST",
-                  body: JSON.stringify(updatedData),
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                }
-              )
-                .then((response) => response.json())
-                .then((data) => {
-                  alert("Notaris updated successfully");
-                  $("#updateModal").modal("hide");
-                  loadNotaris(1); // Reload data after update
-                })
-                .catch((error) => console.log(error));
-            };
+            alert("Notaris updated successfully");
+            $("#updateModal").modal("hide");
+            loadNotaris(1); // Reload data after update
           })
           .catch((error) => console.log(error));
-      }
+      };
+    })
+    .catch((error) => console.log(error));
+}
+
 
       // Function to show Delete modal
       function showDeleteModal(notarisId) {
         $("#deleteModal").modal("show");
         document.getElementById("confirmDelete").onclick = () => {
           fetch(
-            `https://3r1djzn5-8080.asse.devtunnels.ms/notaris/delete?notaris_id=${notarisId}`,
+            `http://127.0.0.1:8080/notaris/delete?notaris_id=${notarisId}`,
             { method: "POST" }
           )
             .then((response) => response.json())
@@ -497,54 +530,78 @@
         };
       }
 
-      document
-        .getElementById("addNotarisButton")
-        .addEventListener("click", () => {
-          $("#addNotarisModal").modal("show");
-        });
-      document
-        .getElementById("addNotarisForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
+// Function to load Akta data into the dropdown
+function loadAktaData() {
+  fetch("http://127.0.0.1:8080/akta/")
+    .then((response) => response.json())
+    .then((aktaData) => {
+      const aktaDropdown = document.getElementById("aktaDropdown");
+      aktaDropdown.innerHTML = '<option value="">Pilih Akta</option>'; // Clear existing options
+      aktaData.data.forEach((akta) => {
+        const option = document.createElement("option");
+        option.value = akta.AktaID;
+        option.textContent = akta.Akta;
+        aktaDropdown.appendChild(option);
+      });
+    })
+    .catch((error) => console.error("Error loading Akta data:", error));
+}
 
-          const newNotaris = {
-            akta_id: parseInt(document.getElementById("akta_id").value),
-            pihak_memberi: document.getElementById("pihak_memberi").value,
-            pihak_menerima: document.getElementById("pihak_menerima").value,
-            nomor_hak: document.getElementById("nomor_hak").value,
-            transaksi: parseInt(document.getElementById("transaksi1").value),
-            nop: parseInt(document.getElementById("nop1").value),
-            keterangan: document.getElementById("keterangan1").value,
-          };
+// Show the modal and load the Akta dropdown
+document.getElementById("openAddNotarisModalButton").addEventListener("click", function () {
+  $('#addNotarisModal').modal('show');
+  loadAkta(); // Load the Akta dropdown options
+});
 
-          fetch("https://3r1djzn5-8080.asse.devtunnels.ms/notaris/create", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(newNotaris),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              alert("Notaris added successfully!");
-              $("#addNotarisModal").modal("hide"); // Close the modal after submission
-              loadNotaris(1); // Reload the notaris list
-            })
-            .catch((error) => console.error("Error adding Notaris:", error));
-        });
+// Handle form submission to add Notaris
+document.getElementById("addNotarisForm").addEventListener("submit", function (e) {
+  e.preventDefault();
 
-      function fetchAkta() {
-        return fetch("https://3r1djzn5-8080.asse.devtunnels.ms/akta/")
-          .then((response) => response.json())
-          .then((data) => {
-            // Store Akta data in a map by AktaID for quick lookup
-            const aktaMap = new Map();
-            data.data.forEach((akta) => {
-              aktaMap.set(akta.AktaID, akta.Akta); // Map AktaID to Akta name
-            });
-            return aktaMap;
-          });
-      }
+  const aktaId = document.getElementById("aktaDrop").value; // Get selected Akta ID
+  const newNotaris = {
+    akta_id: parseInt(aktaId),
+    pihak_memberi: document.getElementById("pihak_memberi").value,
+    pihak_menerima: document.getElementById("pihak_menerima").value,
+    nomor_hak: document.getElementById("nomor_hak").value,
+    transaksi: parseInt(document.getElementById("transaksi1").value),
+    nop: parseInt(document.getElementById("nop1").value),
+    keterangan: document.getElementById("keterangan1").value,
+  };
+
+  // Send data to the API to create Notaris
+  fetch("http://127.0.0.1:8080/notaris/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newNotaris),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      alert("Notaris added successfully!");
+      $("#addNotarisModal").modal("hide"); // Close modal
+      loadNotaris(1); // Reload the notaris list
+    })
+    .catch((error) => console.error("Error adding Notaris:", error));
+});
+
+// Function to load Akta data into the dropdown
+function loadAkta() {
+  fetch("http://127.0.0.1:8080/akta/")
+    .then((response) => response.json())
+    .then((aktaData) => {
+      const aktaDrop = document.getElementById("aktaDrop");
+      aktaDrop.innerHTML = '<option value="">Pilih Akta</option>'; // Clear existing options
+      aktaData.data.forEach((akta) => {
+        const option = document.createElement("option");
+        option.value = akta.AktaID;
+        option.textContent = akta.Akta;
+        aktaDrop.appendChild(option);
+      });
+    })
+    .catch((error) => console.error("Error loading Akta data:", error));
+}
+
 
       // Initial load of Notaris data
       loadNotaris(1);
