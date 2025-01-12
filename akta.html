@@ -286,7 +286,7 @@
     <script>
       // Function to fetch and display Akta data
       function loadAkta() {
-        fetch("https://3r1djzn5-8080.asse.devtunnels.ms/akta/")
+        fetch("http://127.0.0.1:8080/akta/")
           .then((response) => response.json())
           .then((data) => {
             const aktaTableBody = document.getElementById("aktaTableBody");
@@ -317,7 +317,7 @@
       function deleteAktaModal(aktaId) {
         $("#deleteModal").modal("show");
         document.getElementById("confirmDelete").onclick = () => {
-          fetch(`https://3r1djzn5-8080.asse.devtunnels.ms/akta/delete?akta_id=${aktaId}`, {
+          fetch(`http://127.0.0.1:8080/akta/delete?akta_id=${aktaId}`, {
             method: "POST",
           })
             .then((response) => response.json())
@@ -331,7 +331,7 @@
       }
 
       function showUpdateModal(aktaID) {
-  const url = `https://3r1djzn5-8080.asse.devtunnels.ms/akta/detail?akta_id=${aktaID}`;
+  const url = `http://127.0.0.1:8080/akta/detail?akta_id=${aktaID}`;
   fetch(url)
     .then((response) => response.json())
     .then((data) => {
@@ -347,7 +347,7 @@
           Akta: document.getElementById("updateAkta").value,  // Get the updated Akta value
         };
 
-        fetch(`https://3r1djzn5-8080.asse.devtunnels.ms/akta/update?akta_id=${aktaID}`, {
+        fetch(`http://127.0.0.1:8080/akta/update?akta_id=${aktaID}`, {
           method: "POST",
           body: JSON.stringify(updatedData),  // Send the updated Akta and AktaID
           headers: {
@@ -405,7 +405,7 @@
             akta: document.getElementById("akta").value,
           };
 
-          fetch("https://3r1djzn5-8080.asse.devtunnels.ms/akta/create", {
+          fetch("http://127.0.0.1:8080/akta/create", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -416,11 +416,11 @@
             .then((data) => {
               alert("Akta added successfully!");
               $("#addNotarisModal").modal("hide"); // Close the modal after submission
-              loadAkta
+              loadAkta()
             })
             .catch((error) => console.error("Error adding Notaris:", error));
         });
-        loadAkta
+        loadAkta()
     </script>
   </body>
 </html>
