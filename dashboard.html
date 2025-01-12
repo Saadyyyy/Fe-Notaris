@@ -28,7 +28,7 @@ let page = 1;
 let totalPages = 10; // You should dynamically get the total number of pages if your API provides that info
 
 function fetchData(page) {
-    fetch(`https://3r1djzn5-8080.asse.devtunnels.ms/notaris/?page=${page}&per_page=10&tgl_mulai=2024-01-1&tgl_selesai=2026-01-6&search=`)
+    fetch(`http://127.0.0.1:8080/notaris/?page=${page}&per_page=10&tgl_mulai=2024-01-1&tgl_selesai=2026-01-6&search=`)
         .then(response => response.json())
         .then(data => {
             allData = allData.concat(data.data); // Concatenate the data for all pages
